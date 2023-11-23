@@ -25,6 +25,12 @@ The core functionality includes :
 - Deividas Dapkus  - Front End Development, % contribution
 
 # Tools Used
+## Version Control Tools
+- GitHub - Code repository for managing code versions
+
+## Testing Tools
+- Jest -  Create and run tests for the Back End
+  *Add details on end to end testing*
 
 # How To Run The Application
 
