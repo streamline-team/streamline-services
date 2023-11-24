@@ -1,4 +1,5 @@
 import { ErrorObject } from "ajv";
+import { User } from "data/schema";
 
 export enum Environments {
   LOCAL = "local",
@@ -63,7 +64,8 @@ export type ServiceResponse<T> =
     };
 
 export interface Shared {
-  token: string;
+  authId: string | null;
+  user: User | null;
 }
 
 export type ActionProps<Params = {}, Body = {}, Query = {}> = {

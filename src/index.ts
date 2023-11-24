@@ -1,7 +1,7 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
+import { cors } from "hono/cors";
 import routes from "./config/routes";
-import { tasks } from "./data/schema";
 import db from "./data";
 
 const main = async (): Promise<void> => {
@@ -10,19 +10,15 @@ const main = async (): Promise<void> => {
       return;
     }
 
-    // Trust GCP X-Forwarded
-
-    const repo = db();
-
-    const test = await repo.select().from(tasks);
-
-    console.log(test);
+    db();
 
     const port: number = process.env.PORT
       ? parseInt(process.env.PORT, 10)
       : 8080;
 
     const app = new Hono();
+
+    app.use("*", cors());
 
     app.route("/", routes);
 
