@@ -1,9 +1,20 @@
 import { Hono } from "hono";
 import Migrate from "./migrate";
+import Controller from "config/controller";
 
 const system = new Hono();
 
-system.get("/ping");
-system.put("/migrate", Migrate);
+system.get("/ping", (ctx) => {
+  return ctx.json({
+    ping: "pong",
+  });
+});
+
+system.put(
+  "/migrate",
+  Controller({
+    action: Migrate,
+  })
+);
 
 export default system;

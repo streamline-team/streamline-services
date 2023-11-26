@@ -65,95 +65,108 @@ type ActionFn<Params = {}, Body = {}, Query = {}, ReturnData = {}> = (
   data: ActionProps<Params, Body, Query>
 ) => Promise<ActionResponseType<ReturnData>>;
 
-interface ControllerProps {
-  action: ActionFn;
+interface ControllerProps<Params = {}, Body = {}, Query = {}, ReturnData = {}> {
+  action: ActionFn<Params, Body, Query, ReturnData>;
+  disableAuth?: boolean;
 }
 const Controller =
-  ({ action }: ControllerProps) =>
+  <Params = {}, Body = {}, Query = {}, Result = {}>({
+    action,
+    disableAuth,
+  }: ControllerProps<Params, Body, Query, Result>) =>
   async (ctx: Context) => {
-    const repo = db();
+    try {
+      try {
+      } catch {}
+      const repo = db();
 
-    const authHeader = ctx.req.raw.headers.get("Authorization");
+      let dbUser: User | null = null;
+      let authId: string | null = null;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return errorResponse({
-        ctx,
-        data: "Invalid credentials",
-        code: 401,
-      });
-    }
+      if (!disableAuth) {
+        const authHeader = ctx.req.raw.headers.get("Authorization");
 
-    const bearer = authHeader.split("Bearer ")[1];
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
 
-    const token = await verifyJwt(bearer);
+        const bearer = authHeader.split("Bearer ")[1];
 
-    if (token.isError) {
-      return errorResponse({
-        ctx,
-        data: "Invalid credentials",
-        code: 401,
-      });
-    }
-    const authId = token.data.sub;
+        const token = await verifyJwt(bearer);
 
-    if (!authId) {
-      return errorResponse({
-        ctx,
-        data: "Invalid credentials",
-        code: 401,
-      });
-    }
+        if (token.isError) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
+        authId = token.data.sub || null;
 
-    console.log("Auth ID: ", authId);
+        if (!authId) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
 
-    let dbUser: User | null = null;
+        const existingUser = await repo
+          .select()
+          .from(user)
+          .where(eq(user.authId, authId));
 
-    const existingUser = await repo
-      .select()
-      .from(user)
-      .where(eq(user.authId, authId));
+        if (!existingUser.length) {
+          const createdAt = new Date();
+          const updatedAt = new Date();
 
-    if (!existingUser.length) {
-      const createdAt = new Date();
-      const updatedAt = new Date();
+          const newUser = await repo.insert(user).values({
+            authId,
+            createdAt,
+            updatedAt,
+          });
 
-      const newUser = await repo.insert(user).values({
+          dbUser = {
+            id: newUser[0].insertId,
+            name: null,
+            authId,
+            createdAt,
+            updatedAt,
+          };
+        } else {
+          dbUser = existingUser[0];
+        }
+      }
+
+      const body = await ctx.req.parseBody();
+
+      const response = await action({
+        body: body as Body,
+        params: ctx.req.param() as Params,
+        query: ctx.req.query() as Query,
         authId,
-        createdAt,
-        updatedAt,
+        user: dbUser,
       });
 
-      dbUser = {
-        id: newUser[0].insertId,
-        name: null,
-        authId,
-        createdAt,
-        updatedAt,
-      };
-    } else {
-      dbUser = existingUser[0];
-    }
+      if (response.isError) {
+        return errorResponse({
+          ctx,
+          data: "Unknown error",
+        });
+      }
 
-    const response = await action({
-      body: ctx.body,
-      params: ctx.req.param,
-      query: ctx.req.query,
-      authId,
-      user: dbUser,
-    });
-
-    if (response.isError) {
-      return errorResponse({
+      return successResponse({
         ctx,
-        data: "Unknown error",
+        data: response.data,
+        code: response.code,
       });
+    } catch (error) {
+      console.log(error);
     }
-
-    return successResponse({
-      ctx,
-      data: response.data,
-      code: response.code,
-    });
   };
 
 export default Controller;

@@ -1,12 +1,19 @@
 import { migrate } from "drizzle-orm/mysql2/migrator";
-import db, { pool } from "data";
+import db from "data";
+import { ActionResponse } from "config/types";
 
-const Migrate = async () => {
+const Migrate = async (): ActionResponse<{}> => {
   const dbInstance = db();
 
-  await migrate(dbInstance, { migrationsFolder: "./src/data/migrations" });
+  await migrate(dbInstance, {
+    migrationsFolder: "./src/data/migrations",
+  });
 
-  pool.end();
+  return {
+    isError: false,
+    code: 200,
+    data: {},
+  };
 };
 
 export default Migrate;

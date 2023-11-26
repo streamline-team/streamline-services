@@ -42,7 +42,7 @@ const ListTasks = async ({ authId }: ActionProps): ActionResponse<{}> => {
     .leftJoin(tag, eq(tag.id, taskToTag.tagId))
     .innerJoin(user, eq(user.authId, authId));
 
-  const data = results.reduce((acc, cur) => {
+  const data = results.reduce<Record<string, TasksWithTags>>((acc, cur) => {
     const taskId = cur.id;
     const task =
       acc[taskId] ||
