@@ -52,14 +52,14 @@ The core functionality includes :
 For backend testing we have completed unit testing, smoke testing, and integration testing.
 
 Whilst completing unit testing we have used Jest as our testing framework.
-* Attach unit testing evidence *
+*Attach unit testing evidence*
 
 Smoke testing is the process of running random tests to check various functionalities are working as expected. 
 To complete smoke testing we have completed random unit tests with both correct, incorrect and edge values to ensure our application is correct and robust.
-* Attach smoke testing evidence *
+*Attach smoke testing evidence*
 
 To complete integration testing we have used []. This framework allows us to test multiple key functionalities of the app, including the addition, updating and removal of items on the list.
-* Attach integration testing evidence *
+*Attach integration testing evidence*
 
 
 # Coding Practices
