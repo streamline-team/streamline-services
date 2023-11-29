@@ -7,6 +7,8 @@ For this project a To Do List Application is being created. Our application will
 
 The core functionality includes : 
 
+[x] Allow for user authentication
+
 [] Create a task to add to the todo list
 
 [] Read tasks on the todo list 
@@ -19,12 +21,14 @@ The core functionality includes :
 
 # Team Description
 
-- Bruno Silva - Back End Development, 25 contribution
-- Rebeca Williams - Back End Testing, % contribution
-- Safiya Behanzin - Front End Testing, % contribution
-- Deividas Dapkus  - Front End Development, % contribution
+- Bruno Silva - Back End Development, 25% contribution
+- Rebeca Williams - Front-End/Back-End Testing, 25% contribution
+- Safiya Behanzin - Front-End/Back-End Testing, 25% contribution
+- Deividas Dapkus  - Front End Development, 25% contribution
 
 # Tools Used
+
+- Figma - UI design tool, used to create mockups of how the app should look and feel as well as the transitions between different application windows.
 ## Version Control Tools
 - GitHub - Code repository for managing code versions
 
@@ -36,9 +40,34 @@ The core functionality includes :
 
 # Project Workflow
 
+- Project management strategies - collaborative design and development
+
+
+- UI design created through an iterative approach where we began with a blank page and progressively made changes based on feedback from the team as to the different features and functionality we wanted to include.
+- Development frameworks decided on based on each team members skills and ability for front and backend development.
+- Testing frameworks used were chosen based on the development language used as well as which team members knowledge of the tools.
+
 # Test Methodologies and Tools
 
+For backend testing we have completed unit testing, smoke testing, and integration testing.
+
+Whilst completing unit testing we have used Jest as our testing framework.
+* Attach unit testing evidence *
+
+Smoke testing is the process of running random tests to check various functionalities are working as expected. 
+To complete smoke testing we have completed random unit tests with both correct, incorrect and edge values to ensure our application is correct and robust.
+* Attach smoke testing evidence *
+
+To complete integration testing we have used []. This framework allows us to test multiple key functionalities of the app, including the addition, updating and removal of items on the list.
+* Attach integration testing evidence *
+
+
 # Coding Practices
+
+Preagreeing on naming conventions means that there is consistency across the front and back end code. This makes the application understandable and maintainable which are key principles to Software Quality Assurance.
+
+Camel Casing - Creates consistency in naming of variables, functions etc.
+
 
 # CI Pipeline
 
