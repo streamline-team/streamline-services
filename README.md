@@ -19,7 +19,7 @@ The core functionality includes :
 
 # Team Description
 
-- Bruno Silva - Back End Development, % contribution
+- Bruno Silva - Back End Development, 25 contribution
 - Rebeca Williams - Back End Testing, % contribution
 - Safiya Behanzin - Front End Testing, % contribution
 - Deividas Dapkus  - Front End Development, % contribution
