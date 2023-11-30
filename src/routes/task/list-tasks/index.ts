@@ -79,9 +79,6 @@ const ListTasks = async ({
 
   queryBuilder.where(and(...where));
 
-  console.log(sortColumn);
-  console.log(sortOrder);
-
   if (sortColumn) {
     if (sortOrder && sortOrder === "DESC") {
       queryBuilder.orderBy(desc(task[sortColumn]));
