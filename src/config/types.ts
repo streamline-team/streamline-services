@@ -1,5 +1,6 @@
 import { ErrorObject } from "ajv";
 import { User } from "data/schema";
+import { MySql2Database } from "drizzle-orm/mysql2";
 
 export enum Environments {
   LOCAL = "local",
@@ -64,14 +65,14 @@ export type ServiceResponse<T> =
     };
 
 export interface Shared {
-  authId: string | null;
-  user: User | null;
+  auth: User | null;
 }
 
 export type ActionProps<Params = {}, Body = {}, Query = {}> = {
   params: Params;
   body: Body;
   query: Query;
+  repo: MySql2Database<typeof import("data/schema")>;
 } & Shared;
 
 export type ActionResponse<T> = Promise<ActionResponseType<T>>;

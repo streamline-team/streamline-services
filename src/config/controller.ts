@@ -29,6 +29,25 @@ export const successResponse = <T>({
   });
 };
 
+async function catchControllerError({
+  ctx,
+  error,
+}: {
+  ctx: Context;
+  error: any;
+}) {
+  if (error instanceof Error) {
+    return errorResponse<Error>({
+      ctx,
+      error: error.message,
+      code: 400,
+      data: error.stack,
+    });
+  }
+
+  return errorResponse({ ctx, error, code: 400, data: error });
+}
+
 export const errorResponse = async <E>({
   ctx,
   error,
@@ -65,95 +84,117 @@ type ActionFn<Params = {}, Body = {}, Query = {}, ReturnData = {}> = (
   data: ActionProps<Params, Body, Query>
 ) => Promise<ActionResponseType<ReturnData>>;
 
-interface ControllerProps {
-  action: ActionFn;
+interface ControllerProps<Params = {}, Body = {}, Query = {}, ReturnData = {}> {
+  action: ActionFn<Params, Body, Query, ReturnData>;
+  disableAuth?: boolean;
 }
 const Controller =
-  ({ action }: ControllerProps) =>
+  <Params = {}, Body = {}, Query = {}, Result = {}>({
+    action,
+    disableAuth,
+  }: ControllerProps<Params, Body, Query, Result>) =>
   async (ctx: Context) => {
-    const repo = db();
+    try {
+      const repo = db();
 
-    const authHeader = ctx.req.raw.headers.get("Authorization");
+      let dbUser: User | null = null;
+      let authId: string | null = null;
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
-      return errorResponse({
+      if (!disableAuth) {
+        const authHeader = ctx.req.raw.headers.get("Authorization");
+
+        if (!authHeader || !authHeader.startsWith("Bearer ")) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
+
+        const bearer = authHeader.split("Bearer ")[1];
+
+        const token = await verifyJwt(bearer);
+
+        if (token.isError) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
+        authId = token.data.sub || null;
+
+        if (!authId) {
+          return errorResponse({
+            ctx,
+            data: "Invalid credentials",
+            code: 401,
+          });
+        }
+
+        const existingUser = await repo
+          .select()
+          .from(user)
+          .where(eq(user.authId, authId));
+
+        if (!existingUser.length) {
+          const createdAt = new Date();
+          const updatedAt = new Date();
+
+          const newUser = await repo.insert(user).values({
+            authId,
+            createdAt,
+            updatedAt,
+          });
+
+          dbUser = {
+            id: newUser[0].insertId,
+            name: null,
+            authId,
+            createdAt,
+            updatedAt,
+          };
+        } else {
+          dbUser = existingUser[0];
+        }
+      }
+
+      let body: Record<string, unknown>;
+
+      try {
+        body = await ctx.req.json();
+      } catch {
+        body = {};
+      }
+
+      const response = await action({
+        body: body as Body,
+        params: ctx.req.param() as Params,
+        query: ctx.req.query() as Query,
+        auth: dbUser,
+        repo,
+      });
+
+      if (response.isError) {
+        return errorResponse({
+          ctx,
+          data: response.data,
+        });
+      }
+
+      return successResponse({
         ctx,
-        data: "Invalid credentials",
-        code: 401,
+        data: response.data,
+        code: response.code,
       });
-    }
+    } catch (error) {
+      console.log(error);
 
-    const bearer = authHeader.split("Bearer ")[1];
-
-    const token = await verifyJwt(bearer);
-
-    if (token.isError) {
-      return errorResponse({
+      return catchControllerError({
         ctx,
-        data: "Invalid credentials",
-        code: 401,
+        error,
       });
     }
-    const authId = token.data.sub;
-
-    if (!authId) {
-      return errorResponse({
-        ctx,
-        data: "Invalid credentials",
-        code: 401,
-      });
-    }
-
-    console.log("Auth ID: ", authId);
-
-    let dbUser: User | null = null;
-
-    const existingUser = await repo
-      .select()
-      .from(user)
-      .where(eq(user.authId, authId));
-
-    if (!existingUser.length) {
-      const createdAt = new Date();
-      const updatedAt = new Date();
-
-      const newUser = await repo.insert(user).values({
-        authId,
-        createdAt,
-        updatedAt,
-      });
-
-      dbUser = {
-        id: newUser[0].insertId,
-        name: null,
-        authId,
-        createdAt,
-        updatedAt,
-      };
-    } else {
-      dbUser = existingUser[0];
-    }
-
-    const response = await action({
-      body: ctx.body,
-      params: ctx.req.param,
-      query: ctx.req.query,
-      authId,
-      user: dbUser,
-    });
-
-    if (response.isError) {
-      return errorResponse({
-        ctx,
-        data: "Unknown error",
-      });
-    }
-
-    return successResponse({
-      ctx,
-      data: response.data,
-      code: response.code,
-    });
   };
 
 export default Controller;

@@ -2,9 +2,11 @@ CREATE TABLE `tag` (
 	`id` int AUTO_INCREMENT NOT NULL,
 	`name` varchar(256) NOT NULL,
 	`background` varchar(9),
+	`userId` int NOT NULL,
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `tag_id` PRIMARY KEY(`id`)
+	CONSTRAINT `tag_id` PRIMARY KEY(`id`),
+	CONSTRAINT `tag_name_background_userId_unique` UNIQUE(`name`,`background`,`userId`)
 );
 --> statement-breakpoint
 CREATE TABLE `task` (
@@ -17,11 +19,7 @@ CREATE TABLE `task` (
 	`userId` int NOT NULL,
 	`createdAt` timestamp NOT NULL DEFAULT (now()),
 	`updatedAt` timestamp NOT NULL DEFAULT (now()),
-	CONSTRAINT `task_id` PRIMARY KEY(`id`),
-	CONSTRAINT `titleIdx` UNIQUE(`title`),
-	CONSTRAINT `doneIdx` UNIQUE(`done`),
-	CONSTRAINT `dueDateIdx` UNIQUE(`dueAt`),
-	CONSTRAINT `priorityIdx` UNIQUE(`priority`)
+	CONSTRAINT `task_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
 CREATE TABLE `taskToTag` (
@@ -39,6 +37,11 @@ CREATE TABLE `user` (
 	CONSTRAINT `user_id` PRIMARY KEY(`id`)
 );
 --> statement-breakpoint
+CREATE INDEX `titleIdx` ON `task` (`title`);--> statement-breakpoint
+CREATE INDEX `doneIdx` ON `task` (`done`);--> statement-breakpoint
+CREATE INDEX `dueAtIdx` ON `task` (`dueAt`);--> statement-breakpoint
+CREATE INDEX `priorityIdx` ON `task` (`priority`);--> statement-breakpoint
+ALTER TABLE `tag` ADD CONSTRAINT `tag_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `task` ADD CONSTRAINT `task_userId_user_id_fk` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `taskToTag` ADD CONSTRAINT `taskToTag_taskId_task_id_fk` FOREIGN KEY (`taskId`) REFERENCES `task`(`id`) ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE `taskToTag` ADD CONSTRAINT `taskToTag_tagId_tag_id_fk` FOREIGN KEY (`tagId`) REFERENCES `tag`(`id`) ON DELETE no action ON UPDATE no action;

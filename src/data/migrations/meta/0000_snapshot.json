@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "2aaf5831-1b3f-4957-8731-800a4402d18b",
+  "id": "04e34045-3054-4945-baa8-4c5af15c3331",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "tag": {
@@ -28,6 +28,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "userId": {
+          "name": "userId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "createdAt": {
           "name": "createdAt",
           "type": "timestamp",
@@ -46,7 +53,21 @@
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "tag_userId_user_id_fk": {
+          "name": "tag_userId_user_id_fk",
+          "tableFrom": "tag",
+          "tableTo": "user",
+          "columnsFrom": [
+            "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {
         "tag_id": {
           "name": "tag_id",
@@ -55,7 +76,16 @@
           ]
         }
       },
-      "uniqueConstraints": {}
+      "uniqueConstraints": {
+        "tag_name_background_userId_unique": {
+          "name": "tag_name_background_userId_unique",
+          "columns": [
+            "name",
+            "background",
+            "userId"
+          ]
+        }
+      }
     },
     "task": {
       "name": "task",
@@ -134,28 +164,28 @@
           "columns": [
             "title"
           ],
-          "isUnique": true
+          "isUnique": false
         },
         "doneIdx": {
           "name": "doneIdx",
           "columns": [
             "done"
           ],
-          "isUnique": true
+          "isUnique": false
         },
-        "dueDateIdx": {
-          "name": "dueDateIdx",
+        "dueAtIdx": {
+          "name": "dueAtIdx",
           "columns": [
             "dueAt"
           ],
-          "isUnique": true
+          "isUnique": false
         },
         "priorityIdx": {
           "name": "priorityIdx",
           "columns": [
             "priority"
           ],
-          "isUnique": true
+          "isUnique": false
         }
       },
       "foreignKeys": {

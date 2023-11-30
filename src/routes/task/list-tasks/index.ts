@@ -1,32 +1,46 @@
 import { ActionProps, ActionResponse } from "config/types";
-import db from "data";
-import { task, tag, taskToTag, user, Task, Tag } from "data/schema";
-import { eq } from "drizzle-orm";
+import { task, tag, taskToTag, Task, Tag } from "data/schema";
+import { SQL, and, asc, desc, eq, like } from "drizzle-orm";
+import { ListTasksQuery } from "./types";
+import { validator } from "src/utils/validator";
+import querySchema from "./schema/query-schema";
 
 interface TasksWithTags extends Omit<Task, "userId"> {
   tags: ListTag[];
 }
 
-interface ListTag extends Omit<Tag, "updatedAt"> {}
+interface ListTag extends Omit<Tag, "updatedAt" | "userId"> {}
 
-const ListTasks = async ({ authId }: ActionProps): ActionResponse<{}> => {
-  if (!authId) {
+const ListTasks = async ({
+  query,
+  auth,
+  repo,
+}: ActionProps<{}, {}, ListTasksQuery>): ActionResponse<{}> => {
+  if (!auth) {
     return {
       isError: true,
-      code: 401,
+      code: 403,
       data: "Unauthorised",
     };
   }
 
-  const repo = db();
+  const paramsValidator = validator<ListTasksQuery>(query, querySchema);
 
-  const results = await repo
+  if (!paramsValidator.isValid) {
+    return {
+      isError: true,
+      code: 400,
+      data: paramsValidator.errors,
+    };
+  }
+
+  const queryBuilder = repo
     .select({
       id: task.id,
       title: task.title,
       description: task.description,
       done: task.done,
-      dueDate: task.dueDate,
+      dueAt: task.dueAt,
       priority: task.priority,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
@@ -39,10 +53,45 @@ const ListTasks = async ({ authId }: ActionProps): ActionResponse<{}> => {
     })
     .from(task)
     .leftJoin(taskToTag, eq(taskToTag.taskId, task.id))
-    .leftJoin(tag, eq(tag.id, taskToTag.tagId))
-    .innerJoin(user, eq(user.authId, authId));
+    .leftJoin(tag, eq(tag.id, taskToTag.tagId));
 
-  const data = results.reduce((acc, cur) => {
+  const { title, priority, done, dueAt, sort } = query;
+
+  const where: SQL[] = [];
+
+  where.push(eq(task.userId, auth.id));
+
+  if (title) {
+    where.push(like(task.title, `%${title}%`));
+  }
+
+  if (priority) {
+    where.push(eq(task.priority, priority));
+  }
+
+  if (done) {
+    where.push(eq(task.done, done));
+  }
+
+  if (dueAt) {
+    where.push(eq(task.dueAt, new Date(dueAt)));
+  }
+
+  queryBuilder.where(and(...where));
+
+  if (sort) {
+    const { column, order } = sort;
+
+    if (order && order === "ASC") {
+      queryBuilder.orderBy(asc(task[column]));
+    } else {
+      queryBuilder.orderBy(desc(task[column]));
+    }
+  }
+
+  const results = await queryBuilder;
+
+  const data = results.reduce<Record<string, TasksWithTags>>((acc, cur) => {
     const taskId = cur.id;
     const task =
       acc[taskId] ||
@@ -51,7 +100,7 @@ const ListTasks = async ({ authId }: ActionProps): ActionResponse<{}> => {
         title: cur.title,
         description: cur.description,
         done: cur.done,
-        dueDate: cur.dueDate,
+        dueAt: cur.dueAt,
         priority: cur.priority,
         createdAt: cur.createdAt,
         updatedAt: cur.updatedAt,
