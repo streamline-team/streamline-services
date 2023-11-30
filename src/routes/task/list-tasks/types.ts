@@ -1,10 +1,8 @@
 export interface ListTasksQuery {
   title?: string;
-  priority?: number;
-  done?: boolean;
+  priority?: string;
+  done?: string;
   dueAt?: string;
-  sort?: {
-    column: string;
-    order?: string;
-  };
+  sortColumn?: string;
+  sortOrder?: string;
 }

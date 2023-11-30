@@ -55,7 +55,7 @@ const ListTasks = async ({
     .leftJoin(taskToTag, eq(taskToTag.taskId, task.id))
     .leftJoin(tag, eq(tag.id, taskToTag.tagId));
 
-  const { title, priority, done, dueAt, sort } = query;
+  const { title, priority, done, dueAt, sortColumn, sortOrder } = query;
 
   const where: SQL[] = [];
 
@@ -66,11 +66,11 @@ const ListTasks = async ({
   }
 
   if (priority) {
-    where.push(eq(task.priority, priority));
+    where.push(eq(task.priority, parseInt(priority, 10)));
   }
 
   if (done) {
-    where.push(eq(task.done, done));
+    where.push(eq(task.done, parseInt(done, 10) === 1));
   }
 
   if (dueAt) {
@@ -79,44 +79,58 @@ const ListTasks = async ({
 
   queryBuilder.where(and(...where));
 
-  if (sort) {
-    const { column, order } = sort;
+  console.log(sortColumn);
+  console.log(sortOrder);
 
-    if (order && order === "ASC") {
-      queryBuilder.orderBy(asc(task[column]));
+  if (sortColumn) {
+    if (sortOrder && sortOrder === "DESC") {
+      queryBuilder.orderBy(desc(task[sortColumn]));
     } else {
-      queryBuilder.orderBy(desc(task[column]));
+      queryBuilder.orderBy(asc(task[sortColumn]));
     }
   }
 
   const results = await queryBuilder;
 
-  const data = results.reduce<Record<string, TasksWithTags>>((acc, cur) => {
-    const taskId = cur.id;
-    const task =
-      acc[taskId] ||
-      (acc[taskId] = {
-        id: cur.id,
-        title: cur.title,
-        description: cur.description,
-        done: cur.done,
-        dueAt: cur.dueAt,
-        priority: cur.priority,
-        createdAt: cur.createdAt,
-        updatedAt: cur.updatedAt,
-        tags: [],
-      });
+  const convertRowToResult = (row: (typeof results)[0]): TasksWithTags => {
+    return {
+      id: row.id,
+      title: row.title,
+      description: row.description,
+      done: row.done,
+      dueAt: row.dueAt,
+      priority: row.priority,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      tags: [],
+    };
+  };
 
-    if (cur.tag) {
-      task.tags.push(cur.tag);
+  const data: TasksWithTags[] = [];
+
+  const mappedEntities: Map<number, number> = new Map();
+
+  results.forEach((result) => {
+    const currentTransformed = mappedEntities.get(result.id);
+
+    const nextIndex = data.length;
+
+    if (currentTransformed === undefined) {
+      mappedEntities[result.id] = nextIndex;
+      data.push(convertRowToResult(result));
     }
 
-    return acc;
-  }, {});
+    const activeIndex =
+      currentTransformed !== undefined ? currentTransformed : nextIndex;
+
+    if (result.tag) {
+      data[activeIndex].tags.push(result.tag);
+    }
+  });
 
   return {
     isError: false,
-    data: Object.values(data),
+    data,
     code: 200,
   };
 };

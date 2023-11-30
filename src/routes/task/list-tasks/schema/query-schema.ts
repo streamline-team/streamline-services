@@ -10,11 +10,13 @@ const querySchema: JSONSchemaType<ListTasksQuery> = {
       nullable: true,
     },
     priority: {
-      type: "number",
+      type: "string",
+      pattern: "^(1|2|3|4|5)$",
       nullable: true,
     },
     done: {
-      type: "boolean",
+      type: "string",
+      pattern: "^(0|1)$",
       nullable: true,
     },
     dueAt: {
@@ -22,23 +24,15 @@ const querySchema: JSONSchemaType<ListTasksQuery> = {
       format: "date-time",
       nullable: true,
     },
-    sort: {
-      type: "object",
+    sortColumn: {
+      type: "string",
       nullable: true,
-      additionalProperties: false,
-      properties: {
-        column: {
-          type: "string",
-          nullable: false,
-          enum: ["createdAt", "updatedAt", "priority"],
-        },
-        order: {
-          type: "string",
-          nullable: true,
-          enum: ["ASC", "DESC"],
-        },
-      },
-      required: ["column"],
+      enum: ["createdAt", "updatedAt", "priority"],
+    },
+    sortOrder: {
+      type: "string",
+      nullable: true,
+      enum: ["ASC", "DESC"],
     },
   },
   required: [],
