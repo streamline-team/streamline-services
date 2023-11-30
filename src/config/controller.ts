@@ -29,6 +29,25 @@ export const successResponse = <T>({
   });
 };
 
+async function catchControllerError({
+  ctx,
+  error,
+}: {
+  ctx: Context;
+  error: any;
+}) {
+  if (error instanceof Error) {
+    return errorResponse<Error>({
+      ctx,
+      error: error.message,
+      code: 400,
+      data: error.stack,
+    });
+  }
+
+  return errorResponse({ ctx, error, code: 400, data: error });
+}
+
 export const errorResponse = async <E>({
   ctx,
   error,
@@ -76,8 +95,6 @@ const Controller =
   }: ControllerProps<Params, Body, Query, Result>) =>
   async (ctx: Context) => {
     try {
-      try {
-      } catch {}
       const repo = db();
 
       let dbUser: User | null = null;
@@ -142,20 +159,26 @@ const Controller =
         }
       }
 
-      const body = await ctx.req.parseBody();
+      let body: Record<string, unknown>;
+
+      try {
+        body = await ctx.req.json();
+      } catch {
+        body = {};
+      }
 
       const response = await action({
         body: body as Body,
         params: ctx.req.param() as Params,
         query: ctx.req.query() as Query,
-        authId,
-        user: dbUser,
+        auth: dbUser,
+        repo,
       });
 
       if (response.isError) {
         return errorResponse({
           ctx,
-          data: "Unknown error",
+          data: response.data,
         });
       }
 
@@ -166,6 +189,11 @@ const Controller =
       });
     } catch (error) {
       console.log(error);
+
+      return catchControllerError({
+        ctx,
+        error,
+      });
     }
   };
 

@@ -1,4 +1,5 @@
 import Ajv, { ErrorObject, ValidateFunction } from "ajv";
+import addFormats from "ajv-formats";
 
 export type ValidatorErrors = ErrorObject[] | null | undefined;
 
@@ -16,6 +17,8 @@ export const validator: Validate = (data, schema, defsSchema) => {
     allErrors: true,
     $data: true,
   });
+
+  addFormats(ajv);
 
   const validatorInstance: ValidateFunction = defsSchema
     ? ajv.addSchema(defsSchema).compile(schema)

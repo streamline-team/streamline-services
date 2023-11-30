@@ -14,6 +14,7 @@ system.put(
   "/migrate",
   Controller({
     action: Migrate,
+    disableAuth: true,
   })
 );
 

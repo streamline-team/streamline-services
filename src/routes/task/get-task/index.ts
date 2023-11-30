@@ -1,6 +1,5 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { GetTaskParams, GetTaskResponse } from "./types";
-import db from "data";
 import { tag, task, taskToTag } from "data/schema";
 import { eq } from "drizzle-orm";
 import { validator } from "src/utils/validator";
@@ -8,9 +7,10 @@ import paramsSchema from "./schema/params-schema";
 
 const GetTask = async ({
   params,
-  user,
+  auth,
+  repo,
 }: ActionProps<GetTaskParams>): ActionResponse<GetTaskResponse> => {
-  if (!user) {
+  if (!auth) {
     return {
       isError: true,
       code: 403,
@@ -30,15 +30,13 @@ const GetTask = async ({
     };
   }
 
-  const repo = db();
-
   const taskData = await repo
     .select({
       id: task.id,
       title: task.title,
       description: task.description,
       done: task.done,
-      dueDate: task.dueDate,
+      dueAt: task.dueAt,
       priority: task.priority,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt,
@@ -65,7 +63,7 @@ const GetTask = async ({
 
   const matchingTask = taskData[0];
 
-  if (matchingTask.userId !== user.id) {
+  if (matchingTask.userId !== auth.id) {
     return {
       isError: true,
       code: 403,
@@ -78,7 +76,7 @@ const GetTask = async ({
     title: matchingTask.title,
     description: matchingTask.description,
     done: matchingTask.done,
-    dueDate: matchingTask.dueDate,
+    dueAt: matchingTask.dueAt,
     priority: matchingTask.priority,
     createdAt: matchingTask.createdAt,
     updatedAt: matchingTask.updatedAt,

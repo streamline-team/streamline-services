@@ -7,7 +7,7 @@ export interface GetTaskResponse {
   title: string;
   description: string | null;
   done: boolean;
-  dueDate: Date | null;
+  dueAt: Date | null;
   priority: number;
   createdAt: Date;
   updatedAt: Date;

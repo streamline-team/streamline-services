@@ -2,13 +2,14 @@ import { relations } from "drizzle-orm";
 import {
   boolean,
   datetime,
+  index,
   int,
   mysqlTable,
   primaryKey,
   text,
   timestamp,
   tinyint,
-  uniqueIndex,
+  unique,
   varchar,
 } from "drizzle-orm/mysql-core";
 
@@ -19,7 +20,7 @@ export const task = mysqlTable(
     title: varchar("title", { length: 120 }).notNull(),
     description: text("description"),
     done: boolean("done").default(false).notNull(),
-    dueDate: datetime("dueAt"),
+    dueAt: datetime("dueAt"),
     priority: tinyint("priority").default(5).notNull(),
     userId: int("userId")
       .notNull()
@@ -29,10 +30,10 @@ export const task = mysqlTable(
   },
   (task) => {
     return {
-      titleIndex: uniqueIndex("titleIdx").on(task.title),
-      doneIdx: uniqueIndex("doneIdx").on(task.done),
-      dueDateIdx: uniqueIndex("dueDateIdx").on(task.dueDate),
-      priorityIdx: uniqueIndex("priorityIdx").on(task.priority),
+      titleIndex: index("titleIdx").on(task.title),
+      doneIdx: index("doneIdx").on(task.done),
+      dueAtIdx: index("dueAtIdx").on(task.dueAt),
+      priorityIdx: index("priorityIdx").on(task.priority),
     };
   }
 );
@@ -50,28 +51,41 @@ export const taskToTag = mysqlTable(
   {
     taskId: int("taskId")
       .notNull()
-      .references(() => task.id),
+      .references(() => task.id, { onDelete: "cascade" }),
     tagId: int("tagId")
       .notNull()
-      .references(() => tag.id),
+      .references(() => tag.id, { onDelete: "cascade" }),
   },
-  (table) => ({
-    pk: primaryKey({ columns: [table.taskId, table.tagId] }),
+  (taskToTag) => ({
+    pk: primaryKey({ columns: [taskToTag.taskId, taskToTag.tagId] }),
   })
 );
 
 export type Task = typeof task.$inferSelect;
 
-export const tag = mysqlTable("tag", {
-  id: int("id").primaryKey().autoincrement(),
-  name: varchar("name", { length: 256 }).notNull(),
-  background: varchar("background", { length: 9 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
-});
+export const tag = mysqlTable(
+  "tag",
+  {
+    id: int("id").primaryKey().autoincrement(),
+    name: varchar("name", { length: 256 }).notNull(),
+    background: varchar("background", { length: 9 }),
+    userId: int("userId")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("createdAt").defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  },
+  (tag) => ({
+    pk: unique().on(tag.name, tag.background, tag.userId),
+  })
+);
 
-export const tagRelations = relations(tag, ({ many }) => ({
+export const tagRelations = relations(tag, ({ many, one }) => ({
   taskToTag: many(taskToTag),
+  user: one(user, {
+    fields: [tag.userId],
+    references: [user.id],
+  }),
 }));
 
 export type Tag = typeof tag.$inferSelect;
