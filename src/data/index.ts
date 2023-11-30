@@ -11,7 +11,7 @@ export const pool = mysql.createPool({
 });
 
 export const db = () => {
-  const db = drizzle(pool, { schema, mode: "default", logger: false });
+  const db = drizzle(pool, { schema, mode: "default", logger: true });
 
   return db;
 };
