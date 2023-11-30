@@ -5,6 +5,7 @@ export interface CreateTaskBody {
   description?: string | null;
   dueAt?: string | null;
   priority?: number | null;
+  tags?: number[];
 }
 
 export type CreateTaskResponse = GetTaskResponse;

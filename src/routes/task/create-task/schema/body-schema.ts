@@ -26,6 +26,14 @@ const bodySchema: JSONSchemaType<CreateTaskBody> = {
       maximum: 5,
       nullable: true,
     },
+    tags: {
+      type: "array",
+      minItems: 1,
+      items: {
+        type: "number",
+      },
+      nullable: true,
+    },
   },
   required: ["title"],
 };

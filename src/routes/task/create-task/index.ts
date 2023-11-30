@@ -1,6 +1,6 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { CreateTaskBody, CreateTaskResponse } from "./types";
-import { task } from "data/schema";
+import { task, taskToTag } from "data/schema";
 import { validator } from "src/utils/validator";
 import bodySchema from "./schema/body-schema";
 import GetTask from "../get-task";
@@ -28,7 +28,7 @@ const CreateTask = async ({
     };
   }
 
-  const { title, description, dueAt, priority } = body;
+  const { title, description, dueAt, priority, tags } = body;
 
   const insertEntity = await repo.insert(task).values({
     title,
@@ -38,9 +38,17 @@ const CreateTask = async ({
     userId: auth.id,
   });
 
+  const insertId = insertEntity[0].insertId;
+
+  if (tags && tags.length) {
+    await repo
+      .insert(taskToTag)
+      .values(tags.map((tag) => ({ tagId: tag, taskId: insertId })));
+  }
+
   const reloadedEntity = await GetTask({
     params: {
-      taskId: insertEntity[0].insertId.toString(),
+      taskId: insertId.toString(),
     },
     query: {},
     body: {},
