@@ -188,8 +188,6 @@ const Controller =
         code: response.code,
       });
     } catch (error) {
-      console.log(error);
-
       return catchControllerError({
         ctx,
         error,
