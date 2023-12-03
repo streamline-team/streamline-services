@@ -113,7 +113,7 @@ const ListTasks = async ({
     const nextIndex = data.length;
 
     if (currentTransformed === undefined) {
-      mappedEntities[result.id] = nextIndex;
+      mappedEntities.set(result.id, nextIndex);
       data.push(convertRowToResult(result));
     }
 
