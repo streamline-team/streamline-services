@@ -1,7 +1,7 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { CreateTagBody, CreateTagResponse } from "./types";
 import { tag } from "data/schema";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import bodySchema from "./schema/body-schema";
 import GetTag from "../get-tag";
 

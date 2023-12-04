@@ -1,9 +1,8 @@
 import { ErrorObject } from "ajv";
+import { Transaction } from "data";
 import { User } from "data/schema";
-import { MySql2Database } from "drizzle-orm/mysql2";
 
 export enum Environments {
-  LOCAL = "local",
   DEV = "dev",
   STAGE = "stage",
   PROD = "prod",
@@ -11,6 +10,10 @@ export enum Environments {
 
 export enum AppEnvs {
   ENV = "APP_ENV",
+}
+
+export enum DatabaseError {
+  ROLLBACK = "Rollback",
 }
 
 /* Error Response */
@@ -72,7 +75,7 @@ export type ActionProps<Params = {}, Body = {}, Query = {}> = {
   params: Params;
   body: Body;
   query: Query;
-  repo: MySql2Database<typeof import("data/schema")>;
+  repo: Transaction;
 } & Shared;
 
 export type ActionResponse<T> = Promise<ActionResponseType<T>>;

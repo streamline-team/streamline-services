@@ -2,7 +2,7 @@ import { ActionProps, ActionResponse } from "config/types";
 import { task, tag, taskToTag, Task, Tag } from "data/schema";
 import { SQL, and, asc, desc, eq, like } from "drizzle-orm";
 import { ListTasksQuery } from "./types";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import querySchema from "./schema/query-schema";
 
 interface TasksWithTags extends Omit<Task, "userId"> {

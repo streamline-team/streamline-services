@@ -35,6 +35,12 @@
             ],
             "data/*": [
                 "src/data/*"
+            ],
+            "utils/*": [
+                "src/utils/*"
+            ],
+            "test/*": [
+                "test/*"
             ]
         }
     },

@@ -1,7 +1,7 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { CreateTaskBody, CreateTaskResponse } from "./types";
 import { task, taskToTag } from "data/schema";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import bodySchema from "./schema/body-schema";
 import GetTask from "../get-task";
 

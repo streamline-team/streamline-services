@@ -2,7 +2,7 @@ import { ActionProps, ActionResponse } from "config/types";
 import { GetTagParams, GetTagResponse } from "./types";
 import { tag } from "data/schema";
 import { eq } from "drizzle-orm";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import paramsSchema from "./schema/params-schema";
 
 const GetTag = async ({

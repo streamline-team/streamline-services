@@ -1,7 +1,7 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { UpdateTaskBody, UpdateTaskResponse, UpdateTaskParams } from "./types";
 import { task } from "data/schema";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import bodySchema from "./schema/body-schema";
 import GetTask from "../get-task";
 import paramsSchema from "./schema/params-schema";

@@ -1,7 +1,7 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { AddTagToTaskParams, AddTagToTaskResponse } from "./types";
 import { tag, task, taskToTag } from "data/schema";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import GetTask from "../get-task";
 import paramsSchema from "./schema/params-schema";
 import { eq } from "drizzle-orm";
