@@ -1,7 +1,7 @@
 import { ActionProps, ActionResponse } from "config/types";
 import { UpdateUserBody, UpdateUserResponse } from "./types";
 import { user } from "data/schema";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import bodySchema from "./schema/body-schema";
 import { eq } from "drizzle-orm";
 

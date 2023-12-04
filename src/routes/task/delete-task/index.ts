@@ -2,7 +2,7 @@ import { ActionProps, ActionResponse } from "config/types";
 import { DeleteTaskParams } from "./types";
 import { task } from "data/schema";
 import { eq } from "drizzle-orm";
-import { validator } from "src/utils/validator";
+import { validator } from "utils/validator";
 import paramsSchema from "./schema/params-schema";
 
 const DeleteTask = async ({

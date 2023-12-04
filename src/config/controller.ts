@@ -7,8 +7,8 @@ import {
   ServiceErrorCodes,
   ServiceSuccessCodes,
 } from "./types";
-import verifyJwt from "src/utils/verify-jwt";
-import db from "data";
+import verifyJwt from "utils/verify-jwt";
+import db, { entityManager } from "data";
 import { User, user } from "data/schema";
 import { eq } from "drizzle-orm";
 
@@ -95,7 +95,8 @@ const Controller =
   }: ControllerProps<Params, Body, Query, Result>) =>
   async (ctx: Context) => {
     try {
-      const repo = db();
+      // const isDev = process.env.APP_ENV === Environments.DEV;
+      const dbInstance = db();
 
       let dbUser: User | null = null;
       let authId: string | null = null;
@@ -103,17 +104,7 @@ const Controller =
       if (!disableAuth) {
         const authHeader = ctx.req.raw.headers.get("Authorization");
 
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-          return errorResponse({
-            ctx,
-            data: "Invalid credentials",
-            code: 401,
-          });
-        }
-
-        const bearer = authHeader.split("Bearer ")[1];
-
-        const token = await verifyJwt(bearer);
+        const token = await verifyJwt(authHeader);
 
         if (token.isError) {
           return errorResponse({
@@ -122,17 +113,18 @@ const Controller =
             code: 401,
           });
         }
+
         authId = token.data.sub || null;
 
         if (!authId) {
           return errorResponse({
             ctx,
-            data: "Invalid credentials",
+            data: "Invalid credentials - no authid",
             code: 401,
           });
         }
 
-        const existingUser = await repo
+        const existingUser = await dbInstance
           .select()
           .from(user)
           .where(eq(user.authId, authId));
@@ -141,7 +133,7 @@ const Controller =
           const createdAt = new Date();
           const updatedAt = new Date();
 
-          const newUser = await repo.insert(user).values({
+          const newUser = await dbInstance.insert(user).values({
             authId,
             createdAt,
             updatedAt,
@@ -167,13 +159,29 @@ const Controller =
         body = {};
       }
 
-      const response = await action({
-        body: body as Body,
-        params: ctx.req.param() as Params,
-        query: ctx.req.query() as Query,
-        auth: dbUser,
-        repo,
-      });
+      const existingTransaction = entityManager.getTransaction();
+
+      let response: ActionResponseType<Result>;
+
+      if (existingTransaction) {
+        response = await action({
+          body: body as Body,
+          params: ctx.req.param() as Params,
+          query: ctx.req.query() as Query,
+          auth: dbUser,
+          repo: existingTransaction,
+        });
+      } else {
+        response = await dbInstance.transaction((repo) =>
+          action({
+            body: body as Body,
+            params: ctx.req.param() as Params,
+            query: ctx.req.query() as Query,
+            auth: dbUser,
+            repo,
+          })
+        );
+      }
 
       if (response.isError) {
         return errorResponse({

@@ -2,8 +2,20 @@ import jwks from "jwks-rsa";
 import jwt, { JwtHeader, SigningKeyCallback, JwtPayload } from "jsonwebtoken";
 import { ActionResponse } from "config/types";
 
-const verifyJwt = async (bearer: string): ActionResponse<JwtPayload> => {
+const verifyJwt = async (
+  authHeader: string | null
+): ActionResponse<JwtPayload> => {
   try {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+      return {
+        isError: true,
+        data: "Invalid credentials",
+        code: 401,
+      };
+    }
+
+    const bearer = authHeader.split("Bearer ")[1];
+
     const jwkClient = jwks({
       jwksUri: "https://streamline-staging.eu.kinde.com/.well-known/jwks",
     });
