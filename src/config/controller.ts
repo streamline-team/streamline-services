@@ -209,7 +209,8 @@ const Controller =
 
           return errorResponse({
             ctx,
-            data: stringifiedError,
+            data,
+            error: stringifiedError,
             code,
           });
         }
@@ -219,6 +220,7 @@ const Controller =
         return errorResponse({
           ctx,
           data: response.data,
+          error: JSON.stringify(response.data),
           code: response.code,
         });
       }

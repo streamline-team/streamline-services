@@ -23,7 +23,7 @@ describe("GET /tag/:tagId", () => {
     const now = new Date();
 
     const tagBody: Omit<Tag, "id"> = {
-      name: "Test Tag - ID 1",
+      name: "Test Tag",
       background: "#FFFFFF",
       createdAt: now,
       updatedAt: now,
@@ -57,15 +57,99 @@ describe("GET /tag/:tagId", () => {
 
     const { meta } = existingTagResponse;
 
-    console.log(existingTagResponse);
-
     expect(meta.code).toBe(404);
     expect(meta.status).toBe(ResponseStatus.ERROR);
   });
 
-  it("should not return another user's tag", async () => {});
+  it("should not return another user's tag", async () => {
+    const primaryUser = "test-user-1";
+    const secondaryUser = "test-user-2";
 
-  it("should not accept a non-numeric id", async () => {});
+    const secondaryUserEntity = await repo().insert(user).values({
+      authId: secondaryUser,
+    });
 
-  it("should return 401 if jwt can't be verified", async () => {});
+    verifyJwtMock.mockImplementation(() => authMock(primaryUser));
+
+    const now = new Date();
+
+    const tagBody: Omit<Tag, "id"> = {
+      name: "Test Tag",
+      background: "#FFFFFF",
+      createdAt: now,
+      updatedAt: now,
+      userId: getInsertId(secondaryUserEntity),
+    };
+
+    const newTag = await repo().insert(tag).values(tagBody);
+
+    const existingTagResponse = await agentRequest<GetTagResponse>(
+      `/tag/${getInsertId(newTag)}`
+    );
+
+    const { meta } = existingTagResponse;
+
+    expect(meta.code).toBe(403);
+    expect(meta.status).toBe(ResponseStatus.ERROR);
+  });
+
+  it("should not accept a non-numeric id", async () => {
+    verifyJwtMock.mockImplementation(() => authMock("test-user-1"));
+
+    const existingTagResponse = await agentRequest<GetTagResponse>("/tag/test");
+
+    const { meta } = existingTagResponse;
+
+    const invalidPatternRequirement = {
+      instancePath: "/tagId",
+      schemaPath: "#/properties/tagId/pattern",
+      keyword: "pattern",
+      params: { pattern: "^[0-9]+$" },
+      message: 'must match pattern "^[0-9]+$"',
+    };
+
+    expect(meta.code).toBe(400);
+    expect(meta.status).toBe(ResponseStatus.ERROR);
+
+    if (existingTagResponse.meta.status !== "error") {
+      return;
+    }
+
+    expect(existingTagResponse.meta.data).toContainEqual(
+      invalidPatternRequirement
+    );
+  });
+
+  it("should return 401 if jwt can't be verified", async () => {
+    verifyJwtMock.mockImplementation(async () => ({
+      isError: true,
+      code: 403,
+      data: null,
+    }));
+
+    const authId = "test-user-1";
+
+    const userEntity = await repo().insert(user).values({
+      authId,
+    });
+
+    const now = new Date();
+
+    const tagBody: Omit<Tag, "id"> = {
+      name: "Test Tag",
+      background: "#FFFFFF",
+      createdAt: now,
+      updatedAt: now,
+      userId: getInsertId(userEntity),
+    };
+
+    const newTag = await repo().insert(tag).values(tagBody);
+
+    const existingTagResponse = await agentRequest<GetTagResponse>(
+      `/tag/${getInsertId(newTag)}`
+    );
+
+    expect(existingTagResponse.meta.code).toBe(401);
+    expect(existingTagResponse.meta.status).toBe(ResponseStatus.ERROR);
+  });
 });
