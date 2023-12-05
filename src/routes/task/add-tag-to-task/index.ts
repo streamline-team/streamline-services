@@ -115,7 +115,7 @@ const AddTagToTask = async ({
   return {
     isError: false,
     code: 200,
-    data: data,
+    data,
   };
 };
 

@@ -16,6 +16,11 @@ export enum DatabaseError {
   ROLLBACK = "Rollback",
 }
 
+export enum ResponseStatus {
+  SUCCCESS = "success",
+  ERROR = "error"
+}
+
 /* Error Response */
 export type ValidatorErrors = ErrorObject[] | null | undefined;
 export type ActionErrorResponsePayload = ValidatorErrors | object | string;

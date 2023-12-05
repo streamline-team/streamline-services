@@ -15,6 +15,13 @@
       "when": 1701361890918,
       "tag": "0001_special_longshot",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1701727219458,
+      "tag": "0002_quiet_daredevil",
+      "breakpoints": true
     }
   ]
 }

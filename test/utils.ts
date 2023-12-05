@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import db, { entityManager } from "data";
-import { DatabaseError } from "config/types";
+import { DatabaseError, ServiceResponse } from "config/types";
 import routes from "config/routes";
 
 import { ActionSuccessResponse } from "config/types";
@@ -9,6 +9,17 @@ import verifyJwt from "utils/verify-jwt";
 import { MySqlRawQueryResult } from "drizzle-orm/mysql2";
 
 export const agent = new Hono();
+
+export const agentRequest = async <T>(
+  path: string,
+  requestInit?: RequestInit | undefined
+) => {
+  const response = await agent.request(path, requestInit);
+
+  const data = await response.json();
+
+  return data as ServiceResponse<T>;
+};
 
 agent.route("/", routes);
 

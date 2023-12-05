@@ -1,9 +1,11 @@
 import { Context } from "hono";
 import {
+  ActionErrorResponse,
   ActionProps,
   ActionResponseType,
   AppEnvs,
   Environments,
+  ResponseStatus,
   ServiceErrorCodes,
   ServiceSuccessCodes,
 } from "./types";
@@ -24,7 +26,7 @@ export const successResponse = <T>({
   ctx.status(code);
 
   return ctx.json({
-    meta: { code, status: "success" },
+    meta: { code, status: ResponseStatus.SUCCCESS },
     data,
   });
 };
@@ -65,7 +67,7 @@ export const errorResponse = async <E>({
     return ctx.json({
       meta: {
         code,
-        status: "error",
+        status: ResponseStatus.ERROR,
         error:
           error || (typeof data === "string" ? data : "Your request failed"),
         data,
@@ -76,7 +78,7 @@ export const errorResponse = async <E>({
   ctx.status(code);
 
   return ctx.json({
-    meta: { code, status: "error", data },
+    meta: { code, status: ResponseStatus.ERROR, data },
   });
 };
 
@@ -96,10 +98,16 @@ const Controller =
   async (ctx: Context) => {
     try {
       // const isDev = process.env.APP_ENV === Environments.DEV;
-      const dbInstance = db();
+      let dbInstance = db();
 
       let dbUser: User | null = null;
       let authId: string | null = null;
+
+      const existingTransaction = entityManager.getTransaction();
+
+      if (existingTransaction) {
+        dbInstance = existingTransaction;
+      }
 
       if (!disableAuth) {
         const authHeader = ctx.req.raw.headers.get("Authorization");
@@ -159,8 +167,6 @@ const Controller =
         body = {};
       }
 
-      const existingTransaction = entityManager.getTransaction();
-
       let response: ActionResponseType<Result>;
 
       if (existingTransaction) {
@@ -172,21 +178,58 @@ const Controller =
           repo: existingTransaction,
         });
       } else {
-        response = await dbInstance.transaction((repo) =>
-          action({
-            body: body as Body,
-            params: ctx.req.param() as Params,
-            query: ctx.req.query() as Query,
-            auth: dbUser,
-            repo,
-          })
-        );
+        try {
+          response = await dbInstance.transaction(async (repo) => {
+            const actionResponse = await action({
+              body: body as Body,
+              params: ctx.req.param() as Params,
+              query: ctx.req.query() as Query,
+              auth: dbUser,
+              repo,
+            });
+
+            if (actionResponse.isError) {
+              throw actionResponse;
+            }
+
+            return actionResponse;
+          });
+        } catch (error) {
+          const controllerError = error as ActionErrorResponse;
+
+          const { code, data } = controllerError;
+
+          if (!data) throw error;
+
+          const isErrorObject = typeof data === "object";
+
+          const stringifiedError = isErrorObject
+            ? JSON.stringify(data)
+            : data.toString();
+
+          return errorResponse({
+            ctx,
+            data,
+            error: stringifiedError,
+            code,
+          });
+        }
       }
+
+      const isErrorObject = typeof response.data === "object";
+
+      const stringifiedError = response.data
+        ? isErrorObject
+          ? JSON.stringify(response.data)
+          : response.data.toString()
+        : "Unknown error";
 
       if (response.isError) {
         return errorResponse({
           ctx,
           data: response.data,
+          error: stringifiedError,
+          code: response.code,
         });
       }
 

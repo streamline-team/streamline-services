@@ -9,7 +9,7 @@ const DeleteTag = async ({
   params,
   auth,
   repo,
-}: ActionProps<DeleteTagParams>): ActionResponse<{}> => {
+}: ActionProps<DeleteTagParams>): ActionResponse<string> => {
   if (!auth) {
     return {
       isError: true,
