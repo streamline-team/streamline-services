@@ -21,18 +21,22 @@ export const task = mysqlTable(
     description: text("description"),
     done: boolean("done").default(false).notNull(),
     dueAt: datetime("dueAt", {
-      fsp: 3
+      fsp: 3,
     }),
     priority: tinyint("priority").default(5).notNull(),
     userId: int("userId")
       .notNull()
       .references(() => user.id),
     createdAt: timestamp("createdAt", {
-      fsp: 3
-    }).defaultNow().notNull(),
+      fsp: 3,
+    })
+      .defaultNow()
+      .notNull(),
     updatedAt: timestamp("updatedAt", {
-      fsp: 3
-    }).defaultNow().notNull(),
+      fsp: 3,
+    })
+      .defaultNow()
+      .notNull(),
   },
   (task) => {
     return {
@@ -52,6 +56,8 @@ export const taskRelations = relations(task, ({ one, many }) => ({
   taskToTag: many(taskToTag),
 }));
 
+export type Task = typeof task.$inferSelect;
+
 export const taskToTag = mysqlTable(
   "taskToTag",
   {
@@ -67,7 +73,7 @@ export const taskToTag = mysqlTable(
   })
 );
 
-export type Task = typeof task.$inferSelect;
+export type TaskToTag = typeof taskToTag.$inferSelect;
 
 export const tag = mysqlTable(
   "tag",
@@ -79,11 +85,15 @@ export const tag = mysqlTable(
       .notNull()
       .references(() => user.id),
     createdAt: timestamp("createdAt", {
-      fsp: 3
-    }).defaultNow().notNull(),
+      fsp: 3,
+    })
+      .defaultNow()
+      .notNull(),
     updatedAt: timestamp("updatedAt", {
-      fsp: 3
-    }).defaultNow().notNull(),
+      fsp: 3,
+    })
+      .defaultNow()
+      .notNull(),
   },
   (tag) => ({
     pk: unique().on(tag.name, tag.background, tag.userId),
@@ -105,11 +115,15 @@ export const user = mysqlTable("user", {
   authId: varchar("authId", { length: 40 }).notNull(),
   name: varchar("name", { length: 256 }),
   createdAt: timestamp("createdAt", {
-    fsp: 3
-  }).defaultNow().notNull(),
+    fsp: 3,
+  })
+    .defaultNow()
+    .notNull(),
   updatedAt: timestamp("updatedAt", {
-    fsp: 3
-  }).defaultNow().notNull(),
+    fsp: 3,
+  })
+    .defaultNow()
+    .notNull(),
 });
 
 export const userRelations = relations(user, ({ many }) => ({

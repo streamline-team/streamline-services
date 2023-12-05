@@ -27,7 +27,7 @@ const querySchema: JSONSchemaType<ListTasksQuery> = {
     sortColumn: {
       type: "string",
       nullable: true,
-      enum: ["createdAt", "updatedAt", "priority"],
+      enum: ["createdAt", "updatedAt", "dueAt", "priority"],
     },
     sortOrder: {
       type: "string",

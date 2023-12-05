@@ -10,13 +10,16 @@ import { MySqlRawQueryResult } from "drizzle-orm/mysql2";
 
 export const agent = new Hono();
 
-export const agentRequest = async <T>(path: string, requestInit?: RequestInit | undefined) => {
-  const response = await agent.request(path, requestInit)
+export const agentRequest = async <T>(
+  path: string,
+  requestInit?: RequestInit | undefined
+) => {
+  const response = await agent.request(path, requestInit);
 
-  const data = await response.json()
+  const data = await response.json();
 
-  return data as ServiceResponse<T>
-}
+  return data as ServiceResponse<T>;
+};
 
 agent.route("/", routes);
 

@@ -4,7 +4,7 @@
   "description": "Backend services for Streamline app, written with &lt;3 using Typescript",
   "main": "lib/index.js",
   "scripts": {
-    "test": "APP_ENV=local jest",
+    "test": "APP_ENV=local jest --coverage",
     "start": "node lib/index.js",
     "build": "tsup src --outDir lib",
     "watch": "tsup src --outDir lib --watch --onSuccess 'node lib/index.js'"

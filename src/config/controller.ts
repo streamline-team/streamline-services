@@ -216,11 +216,19 @@ const Controller =
         }
       }
 
+      const isErrorObject = typeof response.data === "object";
+
+      const stringifiedError = response.data
+        ? isErrorObject
+          ? JSON.stringify(response.data)
+          : response.data.toString()
+        : "Unknown error";
+
       if (response.isError) {
         return errorResponse({
           ctx,
           data: response.data,
-          error: JSON.stringify(response.data),
+          error: stringifiedError,
           code: response.code,
         });
       }

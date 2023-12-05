@@ -1,21 +1,15 @@
 import { ActionProps, ActionResponse } from "config/types";
-import { task, tag, taskToTag, Task, Tag } from "data/schema";
+import { task, tag, taskToTag } from "data/schema";
 import { SQL, and, asc, desc, eq, like } from "drizzle-orm";
-import { ListTasksQuery } from "./types";
+import { ListTasksResponse, ListTasksQuery, TasksWithTags } from "./types";
 import { validator } from "utils/validator";
 import querySchema from "./schema/query-schema";
-
-interface TasksWithTags extends Omit<Task, "userId"> {
-  tags: ListTag[];
-}
-
-interface ListTag extends Omit<Tag, "updatedAt" | "userId"> {}
 
 const ListTasks = async ({
   query,
   auth,
   repo,
-}: ActionProps<{}, {}, ListTasksQuery>): ActionResponse<{}> => {
+}: ActionProps<{}, {}, ListTasksQuery>): ActionResponse<ListTasksResponse> => {
   if (!auth) {
     return {
       isError: true,
@@ -85,6 +79,8 @@ const ListTasks = async ({
     } else {
       queryBuilder.orderBy(asc(task[sortColumn]));
     }
+  } else {
+    queryBuilder.orderBy(desc(task.dueAt));
   }
 
   const results = await queryBuilder;

@@ -156,7 +156,7 @@ describe("PATCH /tag/:tagId", () => {
     expect(meta.status).toBe(ResponseStatus.ERROR);
   });
 
-  it("should require at least one body field for a tag update", async () => {
+  it("should require at least 1 body property for a tag update", async () => {
     const authId = "test-user-1";
 
     verifyJwtMock.mockImplementation(() => authMock(authId));

@@ -9,6 +9,8 @@ import {
 } from "test/utils";
 import { ListTagsResponse } from "./types";
 import { ResponseStatus } from "config/types";
+import { entityManager } from "data";
+import ListTags from ".";
 
 describe("GET /tag", () => {
   it("should list all tags", async () => {
@@ -107,5 +109,29 @@ describe("GET /tag", () => {
     expect(allTagsResponse.meta.status).toBe(ResponseStatus.ERROR);
     expect(allTagsResponse.meta.code).toBe(401);
     expect(allTagsResponse.data).toBeUndefined();
+  });
+
+  it("should return 403 if user verification is bypassed", async () => {
+    const repo = entityManager.getTransaction();
+
+    expect(repo).not.toBeNull();
+
+    if (repo === null) {
+      return;
+    }
+
+    const listTagsResponse = await ListTags({
+      body: {},
+      params: {},
+      query: {},
+      auth: null,
+      repo,
+    });
+
+    const { isError, code, data } = listTagsResponse;
+
+    expect(isError).toBe(true);
+    expect(code).toBe(403);
+    expect(data).toBe("Unauthorised");
   });
 });

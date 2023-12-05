@@ -9,9 +9,11 @@ import {
 } from "test/utils";
 import { CreateTagResponse } from "./types";
 import { ResponseStatus } from "config/types";
+import { entityManager } from "data";
+import CreateTag from ".";
 
 describe("POST /tag", () => {
-  it("should create a tag", async () => {
+  it("should successfully create a tag", async () => {
     verifyJwtMock.mockImplementation(() => authMock("test-user-1"));
 
     const existingTags = await repo()
@@ -224,5 +226,32 @@ describe("POST /tag", () => {
       .from(tag);
 
     expect(dbTagRecords).toHaveLength(0);
+  });
+
+  it("should return 403 if user verification is bypassed", async () => {
+    const repo = entityManager.getTransaction();
+
+    expect(repo).not.toBeNull();
+
+    if (repo === null) {
+      return;
+    }
+
+    const createTagResponse = await CreateTag({
+      body: {
+        name: "Test Tag",
+        background: "#FFFFFF",
+      },
+      params: {},
+      query: {},
+      auth: null,
+      repo,
+    });
+
+    const { isError, code, data } = createTagResponse;
+
+    expect(isError).toBe(true);
+    expect(code).toBe(403);
+    expect(data).toBe("Unauthorised");
   });
 });

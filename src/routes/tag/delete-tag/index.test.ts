@@ -1,4 +1,5 @@
 import { ResponseStatus } from "config/types";
+import { entityManager } from "data";
 import { user, tag, Tag, Task, task, taskToTag } from "data/schema";
 import {
   agentRequest,
@@ -8,6 +9,7 @@ import {
   repo,
   verifyJwtMock,
 } from "test/utils";
+import DeleteTag from ".";
 
 describe("DELETE /tag/:tagId", () => {
   it("should successfully delete a tag by its id", async () => {
@@ -41,6 +43,7 @@ describe("DELETE /tag/:tagId", () => {
     const { meta } = deleteTagResponse;
 
     expect(meta.code).toBe(200);
+    expect(meta.status).toBe(ResponseStatus.SUCCCESS);
 
     const dbTagRecords = await repo()
       .select({
@@ -211,5 +214,31 @@ describe("DELETE /tag/:tagId", () => {
       .from(tag);
 
     expect(dbTagRecords).toHaveLength(1);
+  });
+
+  it("should return 403 if user verification is bypassed", async () => {
+    const repo = entityManager.getTransaction();
+
+    expect(repo).not.toBeNull();
+
+    if (repo === null) {
+      return;
+    }
+
+    const deleteTagResponse = await DeleteTag({
+      body: {},
+      params: {
+        tagId: "1",
+      },
+      query: {},
+      auth: null,
+      repo,
+    });
+
+    const { isError, code, data } = deleteTagResponse;
+
+    expect(isError).toBe(true);
+    expect(code).toBe(403);
+    expect(data).toBe("Unauthorised");
   });
 });

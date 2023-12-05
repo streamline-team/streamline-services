@@ -9,6 +9,8 @@ import {
 } from "test/utils";
 import { GetTagResponse } from "./types";
 import { ResponseStatus } from "config/types";
+import { entityManager } from "data";
+import GetTag from ".";
 
 describe("GET /tag/:tagId", () => {
   it("should return a tag by its id", async () => {
@@ -93,7 +95,7 @@ describe("GET /tag/:tagId", () => {
     expect(meta.status).toBe(ResponseStatus.ERROR);
   });
 
-  it("should not accept a non-numeric id", async () => {
+  it("should not accept a non-numeric tag ID", async () => {
     verifyJwtMock.mockImplementation(() => authMock("test-user-1"));
 
     const existingTagResponse = await agentRequest<GetTagResponse>("/tag/test");
@@ -151,5 +153,31 @@ describe("GET /tag/:tagId", () => {
 
     expect(existingTagResponse.meta.code).toBe(401);
     expect(existingTagResponse.meta.status).toBe(ResponseStatus.ERROR);
+  });
+
+  it("should return 403 if user verification is bypassed", async () => {
+    const repo = entityManager.getTransaction();
+
+    expect(repo).not.toBeNull();
+
+    if (repo === null) {
+      return;
+    }
+
+    const getTaskResponse = await GetTag({
+      body: {},
+      params: {
+        tagId: "1",
+      },
+      query: {},
+      auth: null,
+      repo,
+    });
+
+    const { isError, code, data } = getTaskResponse;
+
+    expect(isError).toBe(true);
+    expect(code).toBe(403);
+    expect(data).toBe("Unauthorised");
   });
 });
