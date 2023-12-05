@@ -3,6 +3,12 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import routes from "./config/routes";
 import db from "./data";
+import { config } from "dotenv";
+import { Environments } from "config/types";
+
+if (process.env.APP_ENV === Environments.DEV) {
+  config();
+}
 
 const main = async (): Promise<void> => {
   try {
