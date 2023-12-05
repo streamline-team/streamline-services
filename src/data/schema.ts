@@ -20,13 +20,19 @@ export const task = mysqlTable(
     title: varchar("title", { length: 120 }).notNull(),
     description: text("description"),
     done: boolean("done").default(false).notNull(),
-    dueAt: datetime("dueAt"),
+    dueAt: datetime("dueAt", {
+      fsp: 3
+    }),
     priority: tinyint("priority").default(5).notNull(),
     userId: int("userId")
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt", {
+      fsp: 3
+    }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", {
+      fsp: 3
+    }).defaultNow().notNull(),
   },
   (task) => {
     return {
@@ -72,8 +78,12 @@ export const tag = mysqlTable(
     userId: int("userId")
       .notNull()
       .references(() => user.id),
-    createdAt: timestamp("createdAt").defaultNow().notNull(),
-    updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+    createdAt: timestamp("createdAt", {
+      fsp: 3
+    }).defaultNow().notNull(),
+    updatedAt: timestamp("updatedAt", {
+      fsp: 3
+    }).defaultNow().notNull(),
   },
   (tag) => ({
     pk: unique().on(tag.name, tag.background, tag.userId),
@@ -94,8 +104,12 @@ export const user = mysqlTable("user", {
   id: int("id").primaryKey().autoincrement(),
   authId: varchar("authId", { length: 40 }).notNull(),
   name: varchar("name", { length: 256 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt", {
+    fsp: 3
+  }).defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt", {
+    fsp: 3
+  }).defaultNow().notNull(),
 });
 
 export const userRelations = relations(user, ({ many }) => ({
