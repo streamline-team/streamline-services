@@ -45,4 +45,5 @@ jobs:
         DB_USER: ${{ secrets.DB_USER }}
         DB_HOST: ${{ secrets.DB_HOST }}
         DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        GCLOUD_PROJECT: ${{ secrets.GCLOUD_PROJECT }}
       run: ./.github/scripts/deploy.sh
