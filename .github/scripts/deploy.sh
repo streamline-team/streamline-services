@@ -1,4 +1,4 @@
-PACKAGE="streamline-service"
+PACKAGE="streamline-services"
 
 docker build -f docker/service/Dockerfile --platform linux/amd64 -t $PACKAGE .
 
