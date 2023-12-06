@@ -21,3 +21,4 @@ gcloud run deploy $PACKAGE \
     --add-cloudsql-instances=$GCLOUD_PROJECT:europe-west2:streamline  \
     --region europe-west2 \
     --min-instances 0
+    --update-env-vars "DB_USER=${{ secrets.DB_USER }},DB_HOST=${{ secrets.DB_HOST }},DB_PASSWORD=${{ secrets.PASSWORD }}"
