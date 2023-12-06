@@ -24,6 +24,14 @@ const main = async (): Promise<void> => {
 
     const app = new Hono();
 
+    app.get("/", (ctx) => {
+      const verificationCode = process.env.APP_GOOGLE_VERIFY_CODE;
+    
+      return ctx.html(
+        `<html><head><meta name="google-site-verification" content="${verificationCode}" /></head><body></body></html>`
+      );
+    });
+
     app.use("*", cors());
 
     app.route("/", routes);

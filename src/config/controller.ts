@@ -97,7 +97,6 @@ const Controller =
   }: ControllerProps<Params, Body, Query, Result>) =>
   async (ctx: Context) => {
     try {
-      // const isDev = process.env.APP_ENV === Environments.DEV;
       let dbInstance = db();
 
       let dbUser: User | null = null;
