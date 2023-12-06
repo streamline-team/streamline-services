@@ -2,7 +2,8 @@ PACKAGE="streamline-service"
 
 docker build -f docker/service/Dockerfile --platform linux/amd64 -t $PACKAGE .
 
-gcloud auth print-access-token | docker login \
+gcloud auth print-access-token \
+    --impersonate-service-account services-deployer@$GCLOUD_PROJECT.iam.gserviceaccount.com | docker login \
     -u oauth2accesstoken \
     --password-stdin https://europe-west2-docker.pkg.dev
 
