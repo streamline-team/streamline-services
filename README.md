@@ -41,6 +41,7 @@ The core functionality includes :
 # Project Workflow
 
 - Project management strategies - collaborative design and development
+- Pair Programming was used throughout the development and testing of the application to ensure there were multiple views on how the application was developed
 
 
 - UI design created through an iterative approach where we began with a blank page and progressively made changes based on feedback from the team as to the different features and functionality we wanted to include.
