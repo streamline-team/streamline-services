@@ -1,14 +1,7 @@
-name: Jest Tests
+name: Deploy on merge
 
 on:
   push:
-    branches:
-      - '*'
-      - '*/*'
-      - '**' 
-      - '!staging'
-      - '!main'
-  pull_request:
     branches:
       - '*'
       - '*/*'
@@ -42,3 +35,10 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+      
+    - uses: 'google-github-actions/auth@v2'
+      with:
+        credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: 'Run deployment'
+      run: ./.github/scripts/deploy.sh
