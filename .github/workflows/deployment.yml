@@ -41,4 +41,8 @@ jobs:
         credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
 
     - name: 'Run deployment'
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
       run: ./.github/scripts/deploy.sh
