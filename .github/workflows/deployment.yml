@@ -39,3 +39,11 @@ jobs:
     - uses: 'google-github-actions/auth@v2'
       with:
         credentials_json: '${{ secrets.GCP_CREDENTIALS }}'
+
+    - name: 'Run deployment'
+      env:
+        DB_USER: ${{ secrets.DB_USER }}
+        DB_HOST: ${{ secrets.DB_HOST }}
+        DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        GCLOUD_PROJECT: ${{ env.GCLOUD_PROJECT }}
+      run: ./.github/scripts/deploy.sh
