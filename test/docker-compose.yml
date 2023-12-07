@@ -3,8 +3,8 @@ services:
     image: mysql/mysql-server:8.0.32
     command: --default-authentication-plugin=mysql_native_password
     env_file:
-      - ./docker/mysql/.env.dev
+      - ../docker/mysql/.env.test
     volumes:
-      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - ../docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - 3306:3306/tcp
+      - 3305:3306/tcp
