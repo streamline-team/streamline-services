@@ -1,9 +1,18 @@
-import { pool } from "data";
+import db, { pool } from "data";
+import { migrate } from "drizzle-orm/mysql2/migrator";
 
-beforeAll(() => null);
+beforeAll(async () => {
+  const dbInstance = db();
+
+  await migrate(dbInstance, {
+    migrationsFolder: "./src/data/migrations",
+  });
+});
+
 afterEach(() => {
-  jest.resetAllMocks()
-})
+  jest.resetAllMocks();
+});
+
 afterAll(async () => {
   pool.end();
 });
