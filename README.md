@@ -14,4 +14,3 @@
 Backend services for Streamline app, written with &lt;3 using Typescript, and battle-tested with Jest
 
 # For full README, please review in [Streamline Web Repository](https://github.com/streamline-team/streamline-web)
-
